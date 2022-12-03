@@ -2,29 +2,45 @@
 
 int runningScore = 0;
 
+List<string> group = new List<string>();
+int numLines = 0;
 foreach (var line in lines)
 {
-    // split line in half
-    // split each char into an array
-    // compare the two arrays
-    // score chars based on ascii
+    // grab 3 lines
+    // find common char in all 3
+    // get score for char
 
-    string secondHalf = line.Substring(line.Length / 2);
-    string firstHalf = line.Replace(secondHalf, "");
+    group.Add(line);
+    numLines++;
 
-    char[] firstChars = firstHalf.ToCharArray();
-    char[] secChars = secondHalf.ToCharArray();
-
-    char[] dups = firstChars.Where(x => secChars.Contains(x)).Distinct().ToArray();
-    
-    foreach(char d in dups)
+    if(numLines == 3)
     {
-        runningScore += GetScore(d);
+        runningScore += ProcessGroup(group);
+        numLines = 0;
+        group.Clear();
     }
 }
 
+
+
 Console.WriteLine("Score = " + runningScore);
 
+int ProcessGroup(List<string> group)
+{
+
+    char[] one = group[0].ToCharArray();
+    char[] two = group[1].ToCharArray();
+    char[] three = group[2].ToCharArray();
+
+    char[] dups = one.Where(x => two.Contains(x) && three.Contains(x)).Distinct().ToArray();
+
+    if(dups.Length > 1 || dups.Length == 0)
+    {
+        throw new Exception("argument exception");
+    }
+
+    return GetScore(dups[0]);
+}
 
 
 int GetScore(char dup)
