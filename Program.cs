@@ -5,24 +5,21 @@ foreach (var line in lines)
 {
     // grab each pair
     // expand each pair inclussive
-    // check if one fully contains two
-    // check if two fully contains one
+    // check if one contains any part of two
+    // check if two contains any part of one
 
     string[] parts = line.Split(',');
     int[] one = Expand(parts[0]);
     int[] two = Expand(parts[1]);
 
-    int[] oneDistinct = one.Except(two).ToArray();
-    int[] twoDistinct = two.Except(one).ToArray();
-
-    if (oneDistinct.Length == 0)
+    if (one.Intersect(two).Any())
     {
-        Console.WriteLine($"{parts[1]} contains all of {parts[0]}");
+        Console.WriteLine($"{parts[1]} intersects with {parts[0]}");
         tally++;
     }
-    else if (twoDistinct.Length == 0)
+    else if (two.Intersect(one).Any())
     {
-        Console.WriteLine($"{parts[0]} contains all of {parts[1]}");
+        Console.WriteLine($"{parts[0]} intersects with {parts[1]}");
         tally++;
     }
 }
