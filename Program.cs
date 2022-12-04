@@ -1,66 +1,50 @@
 ﻿string[] lines = System.IO.File.ReadAllLines("input.txt");
+int tally = 0;
 
-int runningScore = 0;
-
-List<string> group = new List<string>();
-int numLines = 0;
 foreach (var line in lines)
 {
-    // grab 3 lines
-    // find common char in all 3
-    // get score for char
+    // grab each pair
+    // expand each pair inclussive
+    // check if one fully contains two
+    // check if two fully contains one
 
-    group.Add(line);
-    numLines++;
+    string[] parts = line.Split(',');
+    int[] one = Expand(parts[0]);
+    int[] two = Expand(parts[1]);
 
-    if(numLines == 3)
+    int[] oneDistinct = one.Except(two).ToArray();
+    int[] twoDistinct = two.Except(one).ToArray();
+
+    if (oneDistinct.Length == 0)
     {
-        runningScore += ProcessGroup(group);
-        numLines = 0;
-        group.Clear();
+        Console.WriteLine($"{parts[1]} contains all of {parts[0]}");
+        tally++;
+    }
+    else if (twoDistinct.Length == 0)
+    {
+        Console.WriteLine($"{parts[0]} contains all of {parts[1]}");
+        tally++;
     }
 }
 
+Console.WriteLine($"There are {tally} overlaps");
 
-
-Console.WriteLine("Score = " + runningScore);
-
-int ProcessGroup(List<string> group)
+int[] Expand(string range)
 {
+    // separate by hyphen
+    // change to ints
+    // for loop from start num to end number, adding each to return list
 
-    char[] one = group[0].ToCharArray();
-    char[] two = group[1].ToCharArray();
-    char[] three = group[2].ToCharArray();
+    List<int> result = new List<int>();
 
-    char[] dups = one.Where(x => two.Contains(x) && three.Contains(x)).Distinct().ToArray();
+    string[] rangeArr = range.Split('-');
+    int start = Convert.ToInt32(rangeArr[0]);
+    int end = Convert.ToInt32(rangeArr[1]);
 
-    if(dups.Length > 1 || dups.Length == 0)
+    for(int i = start; i <= end; i++)
     {
-        throw new Exception("argument exception");
+        result.Add(i);
     }
 
-    return GetScore(dups[0]);
-}
-
-
-int GetScore(char dup)
-{
-    int ascii = (int)dup;
-    int subtractor = 0;
-    int score = 0;
-
-    if (ascii < 97) // capital
-    {
-        subtractor = 64;
-        score = dup - subtractor + 26;
-    }
-    else
-    {
-        subtractor = 96;
-        score = dup - subtractor;
-    }
-
-    
-
-    return score;
+    return result.ToArray();
 }
