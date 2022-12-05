@@ -26,15 +26,20 @@ for(int i = 0; i < lines[0].Length; i+=3)
 }
 
 // reverse stacks
-for(int i = 0; i < cols.Count; i++)
+Stack<string> ReverseStack(Stack<string> stack)
 {
     Stack<string> rev = new Stack<string>();
-    while (cols[i].Count != 0)
+    while (stack.Count != 0)
     {
-        rev.Push(cols[i].Pop());
+        rev.Push(stack.Pop());
     }
 
-    cols[i] = rev;
+    return rev;
+}
+
+for(int i = 0; i < cols.Count; i++)
+{
+    cols[i] = ReverseStack(cols[i]);
 }
 
 // loop over lines to get instructions
@@ -52,10 +57,19 @@ foreach(var line in lines)
     int fromCol = Convert.ToInt32(l2[1]) -1;
     int toCol = Convert.ToInt32(l2[2]) -1;
 
+    Stack<string> temp = new Stack<string>();
+
     for(int i = 0; i< qty; i++)
     {
         string c = cols[fromCol].Pop();
-        cols[toCol].Push(c);
+        temp.Push(c);
+    }
+
+    // now add to correct col in reverse order
+    //Stack<string> revTemp = ReverseStack(temp);
+    while(temp.Count > 0)
+    {
+        cols[toCol].Push(temp.Pop());
     }
 }
 
