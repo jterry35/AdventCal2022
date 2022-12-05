@@ -1,47 +1,68 @@
-﻿string[] lines = System.IO.File.ReadAllLines("input.txt");
-int tally = 0;
+﻿using System.Text;
 
-foreach (var line in lines)
+string[] lines = System.IO.File.ReadAllLines("input.txt");
+
+// loop over each column
+List<Stack<string>> cols = new List<Stack<string>>();
+
+for(int i = 0; i < lines[0].Length; i+=3)
 {
-    // grab each pair
-    // expand each pair inclussive
-    // check if one contains any part of two
-    // check if two contains any part of one
+    Stack<string> localCols = new Stack<string>();
 
-    string[] parts = line.Split(',');
-    int[] one = Expand(parts[0]);
-    int[] two = Expand(parts[1]);
-
-    if (one.Intersect(two).Any())
+    foreach (var line in lines)
     {
-        Console.WriteLine($"{parts[1]} intersects with {parts[0]}");
-        tally++;
+        if (line.Contains("[") == false) break;
+
+        string l = line.Substring(i, 3);
+        if (string.IsNullOrWhiteSpace(l) == true) continue;
+
+        l = l.Replace("[", "");
+        l = l.Replace("]", "");
+        localCols.Push(l);
     }
-    else if (two.Intersect(one).Any())
+
+    cols.Add(localCols);
+    i++;
+}
+
+// reverse stacks
+for(int i = 0; i < cols.Count; i++)
+{
+    Stack<string> rev = new Stack<string>();
+    while (cols[i].Count != 0)
     {
-        Console.WriteLine($"{parts[0]} intersects with {parts[1]}");
-        tally++;
+        rev.Push(cols[i].Pop());
+    }
+
+    cols[i] = rev;
+}
+
+// loop over lines to get instructions
+foreach(var line in lines)
+{
+    if(line.StartsWith("move") == false) continue;
+
+    string l = line.Replace("move", "");
+    l = l.Replace(" from ", ",");
+    l = l.Replace(" to ", ",");
+
+    string[] l2 = l.Split(',');
+
+    int qty = Convert.ToInt32(l2[0]);
+    int fromCol = Convert.ToInt32(l2[1]) -1;
+    int toCol = Convert.ToInt32(l2[2]) -1;
+
+    for(int i = 0; i< qty; i++)
+    {
+        string c = cols[fromCol].Pop();
+        cols[toCol].Push(c);
     }
 }
 
-Console.WriteLine($"There are {tally} overlaps");
-
-int[] Expand(string range)
+string output = "";
+foreach(var col in cols)
 {
-    // separate by hyphen
-    // change to ints
-    // for loop from start num to end number, adding each to return list
-
-    List<int> result = new List<int>();
-
-    string[] rangeArr = range.Split('-');
-    int start = Convert.ToInt32(rangeArr[0]);
-    int end = Convert.ToInt32(rangeArr[1]);
-
-    for(int i = start; i <= end; i++)
-    {
-        result.Add(i);
-    }
-
-    return result.ToArray();
+    output += col.Peek();
 }
+
+Console.WriteLine(output);
