@@ -1,82 +1,30 @@
-﻿using System.Text;
+﻿
+string str = System.IO.File.ReadAllText("input.txt");
 
-string[] lines = System.IO.File.ReadAllLines("input.txt");
+List<char> marker = new List<char>();
 
-// loop over each column
-List<Stack<string>> cols = new List<Stack<string>>();
-
-for(int i = 0; i < lines[0].Length; i+=3)
+for(int i = 0; i < str.Length; i++)
 {
-    Stack<string> localCols = new Stack<string>();
-
-    foreach (var line in lines)
+    marker.Add(str[i]);
+    if(marker.Count % 14 == 0)
     {
-        if (line.Contains("[") == false) break;
+        bool hasDup = HasDup(marker);
+        if(hasDup == false)
+        {
+            Console.WriteLine(i+1);
+            break;
+        }
 
-        string l = line.Substring(i, 3);
-        if (string.IsNullOrWhiteSpace(l) == true) continue;
-
-        l = l.Replace("[", "");
-        l = l.Replace("]", "");
-        localCols.Push(l);
-    }
-
-    cols.Add(localCols);
-    i++;
-}
-
-// reverse stacks
-Stack<string> ReverseStack(Stack<string> stack)
-{
-    Stack<string> rev = new Stack<string>();
-    while (stack.Count != 0)
-    {
-        rev.Push(stack.Pop());
-    }
-
-    return rev;
-}
-
-for(int i = 0; i < cols.Count; i++)
-{
-    cols[i] = ReverseStack(cols[i]);
-}
-
-// loop over lines to get instructions
-foreach(var line in lines)
-{
-    if(line.StartsWith("move") == false) continue;
-
-    string l = line.Replace("move", "");
-    l = l.Replace(" from ", ",");
-    l = l.Replace(" to ", ",");
-
-    string[] l2 = l.Split(',');
-
-    int qty = Convert.ToInt32(l2[0]);
-    int fromCol = Convert.ToInt32(l2[1]) -1;
-    int toCol = Convert.ToInt32(l2[2]) -1;
-
-    Stack<string> temp = new Stack<string>();
-
-    for(int i = 0; i< qty; i++)
-    {
-        string c = cols[fromCol].Pop();
-        temp.Push(c);
-    }
-
-    // now add to correct col in reverse order
-    //Stack<string> revTemp = ReverseStack(temp);
-    while(temp.Count > 0)
-    {
-        cols[toCol].Push(temp.Pop());
+        marker.RemoveAt(0);
     }
 }
 
-string output = "";
-foreach(var col in cols)
+bool HasDup(List<char> marker)
 {
-    output += col.Peek();
-}
+    var d = marker.Distinct().ToArray();
+    if (d.Count() == marker.Count())
+        return false;
 
-Console.WriteLine(output);
+    return true;
+
+}
