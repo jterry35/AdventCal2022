@@ -1,56 +1,63 @@
 ﻿
 string[] lines = System.IO.File.ReadAllLines("input.txt");
 
-int numRows = lines.Length - 1;
-int numCols = lines[0].Length - 1;
+int numRows = lines.Length;
+int numCols = lines[0].Length;
 
 int[,] cells = new int[numRows, numCols];
 
 
 // first get all cells
-for(int row = 0; row < numRows; row++)
+for (int row = 0; row < numRows; row++)
 {
     string line = lines[row];
 
-    for(int col = 0; col < numCols; col++)
+    for (int col = 0; col < numCols; col++)
     {
-        cells[row, col] = Convert.ToInt32(line[col]);
+        char c = line[col];
+        string cs = c.ToString();
+        int num = Convert.ToInt32(cs);
+        cells[row, col] = num;
     }
 }
 
 int numVis = 0;
 
-for (int row = 0; row < numRows; row++)
+for (int row = 1; row < numRows - 1; row++)
 {
-    for (int col = 0; col < numCols; col++)
+    for (int col = 1; col < numCols - 1; col++)
     {
         int cell = cells[row, col];
 
-        bool r = GetCellsRightOf(row, col).Any(x => x < cell);
-        bool l = GetCellsLeftOf(row, col).Any(x => x < cell);
-        bool u = GetCellsUpOf(row, col).Any(x => x < cell);
-        bool d = GetCellsDownOf(row, col).Any(x => x < cell);
+        var r = GetCellsRightOf(row, col);
+        bool visFromRight = r.All(x => x < cell);
 
-        if (!r && !l && !u && !d)
+        var l = GetCellsLeftOf(row, col);
+        bool visFromLeft = l.All(x => x < cell);
+
+        var u = GetCellsUpOf(row, col);
+        bool visFromTop = u.All(x => x < cell);
+
+        var d = GetCellsDownOf(row, col);
+        bool visFromBottom = d.All(x => x < cell);
+
+        if (visFromRight || visFromLeft || visFromTop || visFromBottom)
             numVis++;
     }
 }
 
+numVis += numCols * 2;
+numVis += numRows * 2;
+numVis -= 4;
 Console.WriteLine(numVis);
 
 List<int> GetCellsRightOf(int row, int col)
 {
     List<int> r = new List<int>();
 
-    if (col == numCols - 1)
+    for (int i = col + 1; i < numCols; i++)
     {
-        r.Add(Int32.MaxValue);
-        return r;
-    }
-
-    for(int i = col+1; i < numCols; i++)
-    {
-        r.Add(cells[row,i]);
+        r.Add(cells[row, i]);
     }
 
     return r;
@@ -60,13 +67,7 @@ List<int> GetCellsLeftOf(int row, int col)
 {
     List<int> r = new List<int>();
 
-    if (col == 0)
-    {
-        r.Add(Int32.MaxValue);
-        return r;
-    }
-
-    for (int i = col-1; i > 0; i--)
+    for (int i = col - 1; i >= 0; i--)
     {
         r.Add(cells[row, i]);
     }
@@ -78,15 +79,9 @@ List<int> GetCellsUpOf(int row, int col)
 {
     List<int> r = new List<int>();
 
-    if (row == 0)
+    for (int i = row - 1; i >= 0; i--)
     {
-        r.Add(Int32.MaxValue);
-        return r;
-    }
-
-    for (int i = row - 1; i > 0; i--)
-    {
-        r.Add(cells[i, row]);
+        r.Add(cells[i, col]);
     }
 
     return r;
@@ -96,16 +91,10 @@ List<int> GetCellsDownOf(int row, int col)
 {
     List<int> r = new List<int>();
 
-    if (row == numRows-1)
-    {
-        r.Add(Int32.MaxValue);
-        return r;
-    }
-
 
     for (int i = row + 1; i < numRows; i++)
     {
-        r.Add(cells[i, row]);
+        r.Add(cells[i, col]);
     }
 
     return r;
