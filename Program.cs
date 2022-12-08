@@ -1,149 +1,112 @@
 ﻿
 string[] lines = System.IO.File.ReadAllLines("input.txt");
 
-List<Folder> allFolders = new List<Folder>();
+int numRows = lines.Length - 1;
+int numCols = lines[0].Length - 1;
 
-// add root
-Folder root = CreateFolder(null, "/");
-Folder currentFolder = root;
+int[,] cells = new int[numRows, numCols];
 
-int lineNum = 0;
 
-foreach (string line in lines)
+// first get all cells
+for(int row = 0; row < numRows; row++)
 {
-    if (line.StartsWith("dir"))
+    string line = lines[row];
+
+    for(int col = 0; col < numCols; col++)
     {
-        string dir = line.Replace("dir ", "");
-        CreateFolder(currentFolder, dir);
-    }
-    else if (line.StartsWith("$"))
-    {
-        if (line.StartsWith("$ cd"))
-        {
-            string dir = line.Replace("$ cd ", "");
-            if (dir == "..") 
-                currentFolder = currentFolder.Parent;
-            else
-                currentFolder = currentFolder.Folders.First(x => x.Name == dir);
-        }
-    }
-    else
-    {
-        string[] strings = line.Split(' ');
-        int fileSize = Convert.ToInt32(strings[0]);
-        string name = strings[1];
-
-        currentFolder.AddFile(name, fileSize);
-    }
-
-    lineNum++;
-}
-
-
-Folder CreateFolder(Folder parent, string name)
-{
-    Folder folder = new Folder() { Name =name };
-    allFolders.Add(folder);
-
-    folder.Parent = parent;
-
-    if(parent != null)
-        parent.Folders.Add(folder);
-
-    return folder;
-}
-
-int overage = 0;
-const int MAX = 100000;
-const int FILE_SYS = 70000000;
-const int NEEDED = 30000000;
-
-int rootSize = root.FileSizeTotal();
-
-int unused = FILE_SYS - rootSize;
-int amtNeededToDelete = NEEDED - unused;
-
-List<int> allFolderSizes = new List<int>();
-
-foreach(var folder in allFolders)
-{
-    int size = folder.FileSizeTotal();
-    allFolderSizes.Add(size);
-    Console.WriteLine($"{folder.Name} - {size}");
-
-    if (size <= MAX)
-    {
-        overage += size;
-        //Console.WriteLine($"{folder.Name} - {size}");
+        cells[row, col] = Convert.ToInt32(line[col]);
     }
 }
 
-allFolderSizes.Sort();
+int numVis = 0;
 
-foreach(var s in allFolderSizes)
+for (int row = 0; row < numRows; row++)
 {
-    if (s > amtNeededToDelete)
+    for (int col = 0; col < numCols; col++)
     {
-        Console.WriteLine(s);
-        break;
+        int cell = cells[row, col];
+
+        bool r = GetCellsRightOf(row, col).Any(x => x < cell);
+        bool l = GetCellsLeftOf(row, col).Any(x => x < cell);
+        bool u = GetCellsUpOf(row, col).Any(x => x < cell);
+        bool d = GetCellsDownOf(row, col).Any(x => x < cell);
+
+        if (!r && !l && !u && !d)
+            numVis++;
     }
 }
 
+Console.WriteLine(numVis);
 
-//Console.WriteLine(overage);
-
-class Folder
+List<int> GetCellsRightOf(int row, int col)
 {
-    public string Name;
-    public Folder Parent;
-    public List<Folder> Folders = new List<Folder>();
-    public List<File> Files = new List<File>();
+    List<int> r = new List<int>();
 
-    internal void AddFile(string name, int fileSize)
+    if (col == numCols - 1)
     {
-        File f = new File() { Name = name, size = fileSize };
-        this.Files.Add(f);
-    }
-    
-    public int FileSizeTotal()
-    {
-        int total = this.GetFileSizeTotalRecursive(this);
-        return total;
+        r.Add(Int32.MaxValue);
+        return r;
     }
 
-    private int GetFileSizeTotalRecursive(Folder root)
+    for(int i = col+1; i < numCols; i++)
     {
-        int sumFileSize = root.Files.Sum(x => x.size);
-
-        //foreach(var file in root.Files)
-        //{
-        //    Console.WriteLine(file.ToString());
-        //}
-
-        if(root.Folders.Count > 0)
-        {
-            foreach(var folder in root.Folders)
-            {
-               sumFileSize += GetFileSizeTotalRecursive(folder);
-            }
-        }
-
-        return sumFileSize;
+        r.Add(cells[row,i]);
     }
 
-    public override string ToString()
-    {
-        return $"{Name} ({this.FileSizeTotal()})";
-    }
+    return r;
 }
 
-public class File
+List<int> GetCellsLeftOf(int row, int col)
 {
-    public string Name;
-    public int size;
+    List<int> r = new List<int>();
 
-    public override string ToString()
+    if (col == 0)
     {
-        return size.ToString() + " " + Name;
+        r.Add(Int32.MaxValue);
+        return r;
     }
+
+    for (int i = col-1; i > 0; i--)
+    {
+        r.Add(cells[row, i]);
+    }
+
+    return r;
+}
+
+List<int> GetCellsUpOf(int row, int col)
+{
+    List<int> r = new List<int>();
+
+    if (row == 0)
+    {
+        r.Add(Int32.MaxValue);
+        return r;
+    }
+
+    for (int i = row - 1; i > 0; i--)
+    {
+        r.Add(cells[i, row]);
+    }
+
+    return r;
+}
+
+List<int> GetCellsDownOf(int row, int col)
+{
+    List<int> r = new List<int>();
+
+    if (row == numRows-1)
+    {
+        r.Add(Int32.MaxValue);
+        return r;
+    }
+
+
+    for (int i = row + 1; i < numRows; i++)
+    {
+        r.Add(cells[i, row]);
+    }
+
+    return r;
 }
