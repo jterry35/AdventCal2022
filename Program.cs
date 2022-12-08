@@ -55,19 +55,42 @@ Folder CreateFolder(Folder parent, string name)
 
 int overage = 0;
 const int MAX = 100000;
+const int FILE_SYS = 70000000;
+const int NEEDED = 30000000;
+
+int rootSize = root.FileSizeTotal();
+
+int unused = FILE_SYS - rootSize;
+int amtNeededToDelete = NEEDED - unused;
+
+List<int> allFolderSizes = new List<int>();
 
 foreach(var folder in allFolders)
 {
     int size = folder.FileSizeTotal();
+    allFolderSizes.Add(size);
+    Console.WriteLine($"{folder.Name} - {size}");
 
     if (size <= MAX)
     {
         overage += size;
-        Console.WriteLine($"{folder.Name} - {size}");
+        //Console.WriteLine($"{folder.Name} - {size}");
     }
 }
 
-Console.WriteLine(overage);
+allFolderSizes.Sort();
+
+foreach(var s in allFolderSizes)
+{
+    if (s > amtNeededToDelete)
+    {
+        Console.WriteLine(s);
+        break;
+    }
+}
+
+
+//Console.WriteLine(overage);
 
 class Folder
 {
